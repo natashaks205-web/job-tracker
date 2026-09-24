@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Application Tracker</title>
+<meta name="description" content="A free, private tracker for graduate job applications: stages, interview prep, and each firm's rules on AI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EEF1F3; --surface:#FFFFFF; --sunk:#F5F7F8; --ink:#141C26; --muted:#5A6572; --line:#D8DEE3;
+  --accent:#1D5C63; --accent-ink:#FFFFFF; --accent-soft:#DCEBEC;
+  --done:#2E7D4F; --done-soft:#DDF0E4; --cur:#A8650F; --cur-soft:#F7E9D2; --fail:#B3392F; --fail-soft:#F6DEDB; --todo:#AEB7C1;
+  --display:"Bricolage Grotesque", "Hanken Grotesk", system-ui, sans-serif;
+  --body:"Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F151B; --surface:#172029; --sunk:#121A22; --ink:#E4E9EE; --muted:#95A1AE; --line:#27313B;
+    --accent:#63B5B8; --accent-ink:#0B1216; --accent-soft:#1B3438;
+    --done:#5CC08A; --done-soft:#17322A; --cur:#E0A04A; --cur-soft:#3A2A14; --fail:#EC7C70; --fail-soft:#3B1D1A; --todo:#4A5663;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F151B; --surface:#172029; --sunk:#121A22; --ink:#E4E9EE; --muted:#95A1AE; --line:#27313B;
+  --accent:#63B5B8; --accent-ink:#0B1216; --accent-soft:#1B3438;
+  --done:#5CC08A; --done-soft:#17322A; --cur:#E0A04A; --cur-soft:#3A2A14; --fail:#EC7C70; --fail-soft:#3B1D1A; --todo:#4A5663;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body);margin:0}
+.wrap{max-width:980px;margin:0 auto;padding-inline:20px;padding-block:28px 64px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(26px,4.5vw,36px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:20px;font-weight:700}
+h3{font-size:15px;font-weight:600;font-family:var(--body)}
+.eyebrow{font:500 11.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 14px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.ghost{background:none;border-color:transparent;color:var(--muted);padding-inline:8px}
+.btn.danger{color:var(--fail)}
+input[type=text],input[type=url],input[type=date],select,textarea{background:var(--sunk);border:1px solid var(--line);border-radius:7px;padding:8px 10px;width:100%}
+textarea{min-height:90px;resize:vertical;line-height:1.5}
+label.f{display:grid;gap:5px;font-size:13px;color:var(--muted);font-weight:500}
+
+header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+header.top .t{display:grid;gap:8px}
+.savechip{font:12px var(--mono);color:var(--muted);min-height:1em}
+.readonly{background:var(--cur-soft);color:var(--ink);border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:14px}
+
+.summary{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 16px;display:flex;align-items:baseline;gap:10px}
+.stat b{font:700 22px var(--display);font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted)}
+
+.board{display:grid;gap:12px}
+.app{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;gap:14px;cursor:pointer;transition:border-color .15s}
+.app:hover{border-color:var(--accent)}
+.app-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start}
+.app-head .n{display:grid;gap:3px}
+.app-head h2{font-size:21px}
+.app-meta{font-size:13.5px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:6px;font:500 12px var(--mono);padding:4px 10px;border-radius:99px;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.p-todo{background:var(--sunk);color:var(--muted)}
+.p-cur{background:var(--cur-soft);color:var(--cur)}
+.p-done{background:var(--done-soft);color:var(--done)}
+.p-fail{background:var(--fail-soft);color:var(--fail)}
+.open-hint{font-size:13px;color:var(--accent);font-weight:500}
+
+.track-scroll{overflow-x:auto;padding-bottom:4px}
+.track{list-style:none;margin:0;padding:0;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(92px,1fr);min-width:max-content}
+.track li{position:relative;display:grid;justify-items:start;gap:7px;padding-right:10px}
+.track li::before{content:"";position:absolute;top:6px;left:14px;right:0;height:2px;background:var(--line)}
+.track li:last-child::before{display:none}
+.track li.s-done::before{background:var(--done)}
+.dot{position:relative;width:14px;height:14px;border-radius:50%;border:2px solid var(--todo);background:var(--surface);z-index:1}
+.s-done .dot{background:var(--done);border-color:var(--done)}
+.s-current .dot{border-color:var(--cur);box-shadow:0 0 0 4px var(--cur-soft)}
+.s-failed .dot{background:var(--fail);border-color:var(--fail)}
+.track .lbl{font-size:12px;line-height:1.3;color:var(--muted);max-width:120px}
+.s-current .lbl{color:var(--ink);font-weight:600}
+.track .dt{font:11px var(--mono);color:var(--muted)}
+
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:28px;text-align:center;color:var(--muted)}
+.addbar{display:flex;justify-content:flex-end;margin-top:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}
+
+section.log{margin-top:36px;display:grid;gap:10px}
+
+/* detail */
+.detail-head{display:grid;gap:10px;margin-bottom:18px}
+.detail-head .line{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.detail-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px;overflow-x:auto}
+.tab{border:0;background:none;padding:10px 14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+.doc{display:grid;gap:26px}
+.doc section{display:grid;gap:10px}
+.doc p{margin:0;max-width:68ch}
+.doc ul{margin:0;padding-left:20px;display:grid;gap:7px;max-width:72ch}
+.facts{list-style:none;padding:0!important}
+.fact{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+.fact input{margin-top:4px;width:17px;height:17px;accent-color:var(--done)}
+.fact .src{font:12px var(--mono);color:var(--muted);display:block;margin-top:3px}
+.fact.ok{border-color:var(--done);background:var(--done-soft)}
+.verify-note{font-size:13px;color:var(--muted)}
+.mine{border-left:3px solid var(--accent);padding-left:14px}
+.stages{display:grid;gap:12px}
+.stage{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:14px 16px;display:grid;gap:10px}
+.stage-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.stage-top h3{display:flex;gap:10px;align-items:center}
+.num{font:500 12px var(--mono);color:var(--muted)}
+.stage-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.ai{font:500 11.5px var(--mono);padding:3px 9px;border-radius:6px;white-space:nowrap}
+.ai-yes{background:var(--done-soft);color:var(--done)}
+.ai-no{background:var(--fail-soft);color:var(--fail)}
+.ai-check{background:var(--cur-soft);color:var(--cur)}
+.policy{background:var(--accent-soft);border-radius:10px;padding:14px 16px;max-width:72ch}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 11.5px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sample{background:var(--accent-soft);border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:14px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+footer{margin-top:40px;font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="root"><p class="muted">Loading your applications…</p></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script>
+(function(){
+const root = document.getElementById('root');
+const KEY = 'application-tracker-v1';
+let S = null, canSave = true;
+let ui = {open:null, tab:'prep', adding:false, editLists:false, confirmDel:false};
+try{ const u = JSON.parse(sessionStorage.getItem('tracker-ui')||'null'); if(u) ui = Object.assign(ui,u,{adding:false,confirmDel:false}); }catch(e){}
+function remember(){ try{ sessionStorage.setItem('tracker-ui', JSON.stringify({open:ui.open, tab:ui.tab})); }catch(e){} }
+
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDate = d => { if(!d) return ''; const x = new Date(d+'T00:00:00'); return isNaN(x) ? d : x.toLocaleDateString('en-GB',{day:'numeric',month:'short'}); };
+const slug = s => (s||'app').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40) || 'app';
+const AI_LABEL = {yes:'AI allowed', no:'No AI', check:'Use care'};
+
+function status(a){
+  if(a.outcome==='offer') return {k:'done', t:'Offer'};
+  if(a.outcome==='rejected' || a.stages.some(s=>s.status==='failed')) return {k:'fail', t:'Unsuccessful'};
+  if(a.outcome==='withdrawn') return {k:'todo', t:'Withdrawn'};
+  if(a.stages.every(s=>s.status==='todo')) return {k:'todo', t:'Not applied yet'};
+  const cur = a.stages.find(s=>s.status!=='done');
+  if(!cur) return {k:'done', t:'All stages done'};
+  return {k:'cur', t:cur.name};
+}
+function currentIdx(a){
+  if(a.stages.every(s=>s.status==='todo')) return -1;
+  return a.stages.findIndex(s=>s.status!=='done' && s.status!=='failed');
+}
+
+/* ---------- saving ---------- */
+let chip = '';
+function setChip(t){ chip = t; const el = document.getElementById('savechip'); if(el) el.textContent = t; }
+function save(){
+  try{
+    localStorage.setItem(KEY, JSON.stringify(S));
+    setChip('Saved on this device ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
+    return true;
+  }catch(e){
+    canSave = false; render();
+    setChip('Could not save. Your browser is blocking storage.');
+    return false;
+  }
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify(S, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'my-applications-' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+  setChip('Backup downloaded');
+}
+document.getElementById('importFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; if(!f) return;
+  try{
+    const d = JSON.parse(await f.text());
+    if(!d || !Array.isArray(d.apps)) throw new Error('bad');
+    S = Object.assign(blankState(), d); ui.open=null; save(); render(); setChip('Backup restored');
+  }catch(err){ setChip('That file is not a tracker backup. Choose a .json file you exported from here.'); }
+  e.target.value='';
+});
+
+/* ---------- board ---------- */
+function track(a){
+  const ci = currentIdx(a);
+  return '<div class="track-scroll"><ol class="track" aria-label="Stages">' + a.stages.map((s,i)=>{
+    const k = s.status==='done' ? 's-done' : s.status==='failed' ? 's-failed' : (i===ci ? 's-current' : 's-todo');
+    return `<li class="${k}"><span class="dot" aria-hidden="true"></span><span class="lbl">${esc(s.name)}</span>${s.date?`<span class="dt">${esc(fmtDate(s.date))}</span>`:''}</li>`;
+  }).join('') + '</ol></div>';
+}
+function renderBoard(){
+  const apps = S.apps;
+  const n = k => apps.filter(a=>status(a).k===k).length;
+  const applied = apps.filter(a=>a.stages[0] && a.stages[0].status!=='todo').length;
+  let h = `<header class="top"><div class="t"><span class="eyebrow">Graduate applications · ${new Date().getFullYear()}</span><h1>${S.owner?esc(S.owner)+'\'s applications':'My applications'}</h1></div>
+    <div style="display:grid;gap:8px;justify-items:end"><div class="tools"><button class="btn" data-act="export">Download backup</button><button class="btn" data-act="import">Restore backup</button></div><div class="savechip" id="savechip" aria-live="polite">${esc(chip)}</div></div></header>`;
+  if(!canSave) h += `<div class="readonly">Your browser is blocking storage, so changes won't be kept after you close this page. Try a normal (not private) window.</div>`;
+  if(S.apps.some(a=>a.sample)) h += `<div class="sample"><span>The example application shows how the tracker works. Delete it when you're ready to add your own.</span><button class="btn" data-act="clear-sample">Remove example</button></div>`;
+  h += `<div class="summary">
+    <div class="stat"><b>${apps.length}</b><span>tracked</span></div>
+    <div class="stat"><b>${applied}</b><span>applied</span></div>
+    <div class="stat"><b>${n('cur')}</b><span>in progress</span></div>
+    <div class="stat"><b>${n('done')}</b><span>offers</span></div>
+    <div class="stat"><b>${n('fail')}</b><span>unsuccessful</span></div>
+  </div>`;
+  h += '<div class="board">';
+  if(!apps.length) h += `<div class="empty">No applications yet. Add your first one below.</div>`;
+  apps.forEach(a=>{
+    const st = status(a);
+    h += `<div class="app" role="button" tabindex="0" data-open="${esc(a.id)}" aria-label="Open ${esc(a.company)}">
+      <div class="app-head"><div class="n"><h2>${esc(a.company)}</h2><span class="app-meta">${esc(a.role)}${a.location?' · '+esc(a.location):''}${a.deadline?' · Deadline '+esc(fmtDate(a.deadline)):''}</span></div>
+      <div style="display:grid;gap:6px;justify-items:end"><span class="pill p-${st.k}">${esc(st.t)}</span><span class="open-hint">Open prep →</span></div></div>
+      ${track(a)}
+    </div>`;
+  });
+  h += '</div>';
+  if(canSave){
+    if(ui.adding){
+      h += `<form class="card" id="addForm" style="margin-top:14px;display:grid;gap:12px">
+        <h2>Add an application</h2>
+        <div class="form-grid">
+          <label class="f">Company<input type="text" id="nf-company" required></label>
+          <label class="f">Role or programme<input type="text" id="nf-role"></label>
+          <label class="f">Location<input type="text" id="nf-loc" value="London"></label>
+          <label class="f">Deadline<input type="date" id="nf-deadline"></label>
+        </div>
+        <label class="f">Careers page link<input type="url" id="nf-link" placeholder="https://"></label>
+        <label class="f">Stages, one per line (copy them from the firm's careers page)<textarea id="nf-stages">Apply online
+Online assessment
+Video interview
+Assessment centre
+Final interview</textarea></label>
+        <div class="row-actions" style="margin:0"><button type="button" class="btn ghost" data-act="cancel-add">Cancel</button><button class="btn primary" type="submit">Add application</button></div>
+      </form>`;
+    } else h += `<div class="addbar"><button class="btn primary" data-act="add">+ Add application</button></div>`;
+  }
+  h += `<section class="log"><span class="eyebrow">Build log</span><h2>How I used AI to build this</h2>
+    <p class="muted" style="margin:0;max-width:68ch">Record what you asked the AI, what you checked, what you corrected and where you chose not to use it. This becomes your answer to "tell me about a time you used AI".</p>
+    <textarea id="buildlog" ${canSave?'':'readonly'} placeholder="e.g. Asked an AI tool to summarise a firm's hiring rules, then checked them against the firm's own careers page before relying on them…">${esc(S.buildLog)}</textarea>
+    <div class="row-actions" style="margin:0"><button class="btn" data-act="save-log">Save log</button></div>
+  </section>
+  <footer>Everything you enter stays in this browser on this device. Nothing is sent anywhere. Use "Download backup" now and then so you don't lose your notes.</footer>`;
+  root.innerHTML = h;
+}
+
+/* ---------- detail ---------- */
+function renderDetail(a){
+  const st = status(a);
+  const ro = canSave ? '' : 'disabled';
+  let h = `<div class="detail-head">
+    <div><button class="btn ghost" data-act="back" style="padding-left:0">← All applications</button></div>
+    <div class="line"><div style="display:grid;gap:4px"><span class="eyebrow">${esc(a.location||'')}</span><h1>${esc(a.company)}</h1><span class="muted">${esc(a.role)}</span></div>
+    <div style="display:grid;gap:6px;justify-items:end"><span class="pill p-${st.k}">${esc(st.t)}</span><span class="savechip" id="savechip" aria-live="polite">${esc(chip)}</span></div></div>
+  </div>
+  <div class="detail-meta">
+    <label class="f">Deadline<input type="date" id="d-deadline" value="${esc(a.deadline)}" ${ro}></label>
+    <label class="f">Outcome<select id="d-outcome" ${ro}>
+      ${[['','Still in process'],['offer','Offer'],['rejected','Unsuccessful'],['withdrawn','Withdrawn']].map(([v,t])=>`<option value="${v}" ${a.outcome===v?'selected':''}>${t}</option>`).join('')}
+    </select></label>
+    <div class="f" style="display:grid;gap:5px;font-size:13px;color:var(--muted);font-weight:500">Careers page${a.link?`<a href="${esc(a.link)}" target="_blank" rel="noopener" style="font-size:14px;padding-top:8px;overflow-wrap:anywhere">Open official page ↗</a>`:'<span style="padding-top:8px">Not added</span>'}</div>
+  </div>
+  ${track(a)}
+  <div class="tabs" role="tablist" style="margin-top:18px">
+    ${[['prep','Interview prep'],['stages','Stages and log'],['ai','AI rules']].map(([k,t])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${ui.tab===k}">${t}</button>`).join('')}
+  </div>`;
+  if(ui.tab==='prep') h += prepTab(a);
+  else if(ui.tab==='stages') h += stagesTab(a);
+  else h += aiTab(a);
+  if(canSave){
+    h += `<div style="margin-top:40px;border-top:1px solid var(--line);padding-top:16px">` + (ui.confirmDel
+      ? `<div class="confirm">Delete ${esc(a.company)} and all its notes? <button class="btn danger" data-act="del-yes">Delete</button><button class="btn ghost" data-act="del-no">Cancel</button></div>`
+      : `<button class="btn ghost danger" data-act="del">Delete this application</button>`) + `</div>`;
+  }
+  root.innerHTML = h;
+}
+function listOrEmpty(arr, empty){ return arr && arr.length ? '<ul>'+arr.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>' : `<p class="muted">${empty}</p>`; }
+function prepTab(a){
+  const p = a.prep, ro = canSave?'':'readonly';
+  const checked = p.facts.filter(f=>f.checked).length;
+  let h = '<div class="doc">';
+  if(ui.editLists && canSave){
+    h += `<section><h2>Edit prep</h2>
+      <label class="f">Overview<textarea id="e-summary">${esc(p.summary)}</textarea></label>
+      <label class="f">Your angle (one per line)<textarea id="e-angle" style="min-height:140px">${esc(p.angle.join('\n'))}</textarea></label>
+      <label class="f">Likely questions (one per line)<textarea id="e-questions" style="min-height:120px">${esc(p.questions.join('\n'))}</textarea></label>
+      <label class="f">Still to check (one per line)<textarea id="e-checks">${esc(p.checks.join('\n'))}</textarea></label>
+      <div class="row-actions" style="margin:0"><button class="btn ghost" data-act="cancel-lists">Cancel</button><button class="btn primary" data-act="save-lists">Save prep</button></div></section>`;
+  } else {
+    h += `<section><div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap"><h2>Overview</h2>${canSave?'<button class="btn ghost" data-act="edit-lists">Edit prep</button>':''}</div><p>${esc(p.summary)||'<span class="muted">Add a short overview of the firm.</span>'}</p></section>
+    <section><h2>Your angle</h2><p class="muted" style="font-size:14px">How your own background connects to this firm.</p>${listOrEmpty(p.angle,'Add how your experience links to this firm.')}</section>`;
+  }
+  h += `<section><h2>Key facts</h2>
+    <p class="verify-note">Open each source and tick the fact once you've confirmed it yourself. <b>${checked} of ${p.facts.length} checked.</b></p>
+    <ul class="facts">${p.facts.map((f,i)=>`<li class="fact ${f.checked?'ok':''}">
+      <input type="checkbox" data-fact="${i}" ${f.checked?'checked':''} ${canSave?'':'disabled'} aria-label="Checked this fact">
+      <div>${esc(f.text)}<span class="src">${f.url?`<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.source||'Source')} ↗</a>`:esc(f.source||'No source yet')}</span></div>
+      ${canSave?`<button class="btn ghost" data-delfact="${i}" aria-label="Remove fact">✕</button>`:'<span></span>'}
+    </li>`).join('')}</ul>
+    ${canSave?`<form id="factForm" class="card" style="display:grid;gap:10px;padding:14px">
+      <label class="f">Add a fact you found<input type="text" id="ff-text" required></label>
+      <div class="form-grid"><label class="f">Source name<input type="text" id="ff-src" placeholder="e.g. Financial Times, 20 Sep 2026"></label><label class="f">Source link<input type="url" id="ff-url" placeholder="https://"></label></div>
+      <div class="row-actions" style="margin:0"><button class="btn" type="submit">Add fact</button></div></form>`:''}
+  </section>`;
+  if(!(ui.editLists && canSave)){
+    h += `<section><h2>Likely questions</h2>${listOrEmpty(p.questions,'Add questions you expect.')}</section>
+    <section><h2>Still to check</h2>${listOrEmpty(p.checks,'Nothing left to check.')}</section>`;
+  }
+  h += `<section class="mine"><span class="eyebrow">Written by me</span><h2>My answers and STAR examples</h2>
+    <p class="verify-note">Write these in your own words, without AI. Many firms ban AI help with assessment and interview answers, so check the AI rules tab. Use Situation, Task, Action, Result.</p>
+    <textarea id="notes" style="min-height:220px" ${ro} placeholder="Why this firm, in my words:&#10;&#10;STAR example (Intrum):&#10;S –&#10;T –&#10;A –&#10;R –">${esc(p.notes)}</textarea>
+    ${canSave?'<div class="row-actions" style="margin:0"><button class="btn primary" data-act="save-notes">Save my notes</button></div>':''}
+  </section></div>`;
+  return h;
+}
+function stagesTab(a){
+  const ro = canSave?'':'disabled';
+  let h = `<p class="verify-note" style="margin:0 0 14px">Log each stage as you go: the date, how it went, what they asked and what you'd do differently.</p><div class="stages">`;
+  a.stages.forEach((s,i)=>{
+    h += `<div class="stage">
+      <div class="stage-top"><h3><span class="num">${String(i+1).padStart(2,'0')}</span>${esc(s.name)}</h3><span class="ai ai-${esc(s.ai||'check')}">${AI_LABEL[s.ai]||AI_LABEL.check}</span></div>
+      <div class="stage-fields">
+        <label class="f">Status<select id="st-${i}-status" ${ro}>${[['todo','Not started'],['current','In progress'],['done','Done / passed'],['failed','Unsuccessful']].map(([v,t])=>`<option value="${v}" ${s.status===v?'selected':''}>${t}</option>`).join('')}</select></label>
+        <label class="f">Date<input type="date" id="st-${i}-date" value="${esc(s.date)}" ${ro}></label>
+      </div>
+      <label class="f">My log<textarea id="st-${i}-log" ${canSave?'':'readonly'} placeholder="What happened, what they asked, how I felt it went, what to do next time">${esc(s.log)}</textarea></label>
+      ${canSave?`<div class="row-actions" style="margin:0"><button class="btn primary" data-savestage="${i}">Save stage</button></div>`:''}
+    </div>`;
+  });
+  h += '</div>';
+  if(canSave) h += `<form id="stageForm" class="card" style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:end;padding:14px">
+    <label class="f" style="flex:1 1 220px">Add a stage<input type="text" id="sf-name" required placeholder="e.g. Partner interview"></label>
+    <button class="btn" type="submit">Add stage</button></form>`;
+  return h;
+}
+function aiTab(a){
+  let h = `<div class="doc"><section><h2>${esc(a.company)}'s rules on AI</h2>
+    <div class="policy">${esc(a.policy)||'Find the firm\'s official policy on AI in applications and add it here.'}</div>
+    ${a.policyUrl?`<p><a href="${esc(a.policyUrl)}" target="_blank" rel="noopener">Read the official policy ↗</a></p>`:''}</section>
+    <section><h2>Stage by stage</h2><div class="tbl-wrap"><table><thead><tr><th>Stage</th><th>AI</th><th>What that means</th></tr></thead><tbody>
+    ${a.stages.map(s=>`<tr><td>${esc(s.name)}</td><td><span class="ai ai-${esc(s.ai||'check')}">${AI_LABEL[s.ai]||AI_LABEL.check}</span></td><td>${esc(s.aiText||'Check the firm\'s policy.')}</td></tr>`).join('')}
+    </tbody></table></div></section>`;
+  if(canSave){
+    h += `<section><h2>Update the policy</h2><label class="f">Policy summary<textarea id="pol-text">${esc(a.policy)}</textarea></label>
+      <label class="f">Official policy link<input type="url" id="pol-url" value="${esc(a.policyUrl)}"></label>
+      <div class="row-actions" style="margin:0"><button class="btn" data-act="save-policy">Save policy</button></div></section>`;
+  }
+  return h + '</div>';
+}
+
+function render(){
+  if(!S) return;
+  const a = ui.open && S.apps.find(x=>x.id===ui.open);
+  if(a) renderDetail(a); else { ui.open=null; renderBoard(); }
+  remember();
+}
+const cur = () => S.apps.find(x=>x.id===ui.open);
+const val = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+const lines = id => val(id).split('\n').map(s=>s.trim()).filter(Boolean);
+
+/* ---------- events ---------- */
+root.addEventListener('click', e => {
+  const t = e.target.closest('[data-open],[data-act],[data-tab],[data-savestage],[data-delfact]');
+  if(!t) return;
+  if(t.dataset.open){ ui.open=t.dataset.open; ui.tab='prep'; ui.editLists=false; ui.confirmDel=false; render(); window.scrollTo(0,0); return; }
+  if(t.dataset.tab){ ui.tab=t.dataset.tab; render(); return; }
+  if(t.dataset.savestage){ const a=cur(), i=+t.dataset.savestage, s=a.stages[i];
+    s.status=val(`st-${i}-status`); s.date=val(`st-${i}-date`); s.log=val(`st-${i}-log`); render(); save(); return; }
+  if(t.dataset.delfact){ const a=cur(); a.prep.facts.splice(+t.dataset.delfact,1); render(); save(); return; }
+  const act = t.dataset.act, a = ui.open && cur();
+  switch(act){
+    case 'back': ui.open=null; render(); window.scrollTo(0,0); break;
+    case 'add': ui.adding=true; render(); document.getElementById('nf-company')?.focus(); break;
+    case 'cancel-add': ui.adding=false; render(); break;
+    case 'save-log': S.buildLog=val('buildlog'); save(); break;
+    case 'export': exportData(); break;
+    case 'import': document.getElementById('importFile').click(); break;
+    case 'clear-sample': S.apps=S.apps.filter(x=>!x.sample); render(); save(); break;
+    case 'save-notes': a.prep.notes=val('notes'); save(); break;
+    case 'edit-lists': ui.editLists=true; render(); break;
+    case 'cancel-lists': ui.editLists=false; render(); break;
+    case 'save-lists': a.prep.summary=val('e-summary').trim(); a.prep.angle=lines('e-angle'); a.prep.questions=lines('e-questions'); a.prep.checks=lines('e-checks'); ui.editLists=false; render(); save(); break;
+    case 'save-policy': a.policy=val('pol-text').trim(); a.policyUrl=val('pol-url').trim(); render(); save(); break;
+    case 'del': ui.confirmDel=true; render(); break;
+    case 'del-no': ui.confirmDel=false; render(); break;
+    case 'del-yes': S.apps=S.apps.filter(x=>x!==a); ui.open=null; ui.confirmDel=false; render(); save(); break;
+  }
+});
+root.addEventListener('keydown', e => {
+  const t = e.target.closest('[data-open]');
+  if(t && (e.key==='Enter'||e.key===' ')){ e.preventDefault(); t.click(); }
+});
+root.addEventListener('change', e => {
+  const a = ui.open && cur(); if(!a) return;
+  if(e.target.dataset.fact!==undefined){ a.prep.facts[+e.target.dataset.fact].checked=e.target.checked; render(); save(); }
+  else if(e.target.id==='d-deadline'){ a.deadline=e.target.value; save(); }
+  else if(e.target.id==='d-outcome'){ a.outcome=e.target.value; render(); save(); }
+});
+root.addEventListener('submit', e => {
+  e.preventDefault();
+  if(e.target.id==='addForm'){
+    const company = val('nf-company').trim(); if(!company) return;
+    let id = slug(company), n=2; while(S.apps.some(x=>x.id===id)) id = slug(company)+'-'+(n++);
+    const stages = lines('nf-stages').map(name=>({name,status:'todo',date:'',log:'',ai:'check',aiText:'Check the firm\'s policy for this stage.'}));
+    S.apps.push({id, company, role:val('nf-role').trim(), location:val('nf-loc').trim(), deadline:val('nf-deadline'), link:val('nf-link').trim(), outcome:'',
+      stages: stages.length?stages:[{name:'Apply online',status:'todo',date:'',log:'',ai:'check',aiText:''}],
+      prep:{summary:'',facts:[],angle:[],questions:[],checks:['Find the firm\'s rules on using AI in applications.','Research the firm and add facts with sources.'],notes:''},
+      policy:'', policyUrl:''});
+    ui.adding=false; ui.open=id; ui.tab='prep'; render(); window.scrollTo(0,0); save();
+  } else if(e.target.id==='factForm'){
+    const a=cur(), text=val('ff-text').trim(); if(!text) return;
+    a.prep.facts.push({text, source:val('ff-src').trim(), url:val('ff-url').trim(), checked:false}); render(); save();
+  } else if(e.target.id==='stageForm'){
+    const a=cur(), name=val('sf-name').trim(); if(!name) return;
+    a.stages.push({name,status:'todo',date:'',log:'',ai:'check',aiText:'Check the firm\'s policy for this stage.'}); render(); save();
+  }
+});
+
+/* ---------- boot ---------- */
+function blankState(){ return {owner:'', buildLog:'', apps:[]}; }
+function sampleApp(){
+  const st = (name, status, date, log, ai, aiText) => ({name, status, date, log, ai, aiText});
+  return {
+    id:'example', sample:true, company:'Example: Harbourline Bank', role:'Graduate analyst programme (fictional firm)', location:'London', deadline:'', link:'', outcome:'',
+    stages:[
+      st('Apply online','done','','Submitted my CV and two short answers, written myself.','yes','This firm lets you use AI to polish your CV if it stays accurate.'),
+      st('Online assessment','done','','Numerical test was harder than the practice tests. Practise timing next time.','no','No AI. Complete it on your own.'),
+      st('Video interview','current','','','no','Your answers must be your own.'),
+      st('Assessment centre','todo','','','no','No AI.'),
+      st('Final interview','todo','','','no','No AI.')
+    ],
+    prep:{
+      summary:'This is a made-up firm that shows how a prep page works. Write a short overview of the real firm here.',
+      facts:[{text:'Example fact: the bank opened a new London office this year.', source:'Add the real source, such as the firm\'s press release', url:'', checked:false}],
+      angle:['How your degree connects to this firm.','How your work experience connects to the role.'],
+      questions:['Why this firm?','Tell me about a time you worked under pressure.','How have you used AI to improve something?'],
+      checks:['Find the firm\'s official rules on using AI in applications.','Check the deadline and eligibility.'],
+      notes:''
+    },
+    policy:'Example: AI may help with your CV, but not with assessments or interviews. Replace this with the real firm\'s policy and link.', policyUrl:''
+  };
+}
+function boot(){
+  let saved = null;
+  try{ saved = localStorage.getItem(KEY); }catch(e){ canSave = false; }
+  try{ S = saved ? JSON.parse(saved) : null; }catch(e){ S = null; }
+  if(!S || !Array.isArray(S.apps)){ S = blankState(); S.apps.push(sampleApp()); }
+  render();
+}
+boot();
+})();
+</script>
+
+</body>
+</html>
