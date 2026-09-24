@@ -24,17 +24,31 @@ Everything you type stays in your own browser on your own device. There is no ac
 
 ## How I built it
 
+I built this tracker as a first draft, working with AI and taking the key decisions myself. I set the purpose and the features, reviewed each version, and set it up on GitHub Pages myself. The sections below cover why I built it, how I used AI, what I changed, and where I chose not to use it.
+
 
 **Why I built it:**
+I'm applying to graduate programmes at large firms. Each one has several stages, its own deadlines and its own rules. I wanted one place to see every application, the stage I'd reached, my interview prep and my notes from each stage. The world of work is changing, and AI is becoming part of everyday roles. I wanted this project to show that I can use AI ethically and with good judgement.
 
 **How I used AI:**
-_(What did you ask for? Which decisions did you make yourself?)_
+I built this with Claude, an AI assistant. I decided what the tracker needed:
+
+a visual view of every firm I've applied to
+the stage I'm at in each firm's process
+a page for each company, with interview prep and information about the firm
+a log of what happened at each stage
+
+I asked the AI to research each firm's application process, its background and its rules on AI, and then to build the tracker. I decided to make a public version for other people too. That meant removing my personal information and saving data only in each user's own browser. I set it up on GitHub Pages myself.
 
 **What I checked or changed:**
-_(Give one or two examples where the AI was wrong or needed correcting, and what you did about it.)_
+This is a first draft, and reviewing it has already shaped the next version.
+
+Setting the direction: the AI started building before I'd explained what I wanted, and it began researching another role I'd applied for elsewhere. I stopped it and set out my own requirements.
+Reviewing the design: the colours and layout felt too plain, some headings were not clear enough, and the link in the README didn't work. For the next version I plan to make the design more engaging, make the headings clearer, and rename "Key facts" to "Information about the firm". I'm keeping the parts that worked well: the log for each stage, the AI rules for each firm, and a source on every fact.
+Checking the facts: every fact about a firm links to its source, and I only rely on a fact once I've confirmed it myself.
 
 **Where I chose not to use AI:**
-_(For example: my assessment answers, my interview answers, other people's personal data.)_
+I used AI for research and building, but not in the recruitment process itself. My assessment and interview answers are my own, as each firm's guidelines ask, and I keep other people's personal information out of AI tools. That's why this version of the tracker starts blank: the answers section is left for each person to write in their own words.
 
 ## Tech
 
